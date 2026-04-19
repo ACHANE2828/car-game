@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>回避ゲーム</title>
+<style>
+body {
+  margin: 0;
+  background: #111;
+  color: white;
+  text-align: center;
+  font-family: sans-serif;
+}
+#game {
+  position: relative;
+  width: 300px;
+  height: 500px;
+  margin: 20px auto;
+  background: #222;
+  overflow: hidden;
+}
+.car {
+  position: absolute;
+  width: 50px;
+  height: 80px;
+  background: cyan;
+  bottom: 10px;
+}
+.obstacle {
+  position: absolute;
+  width: 50px;
+  height: 80px;
+  background: red;
+}
+button {
+  font-size: 20px;
+  margin: 10px;
+  padding: 10px 20px;
+}
+</style>
+</head>
+<body>
+
+<h2>🚗 回避ゲーム（ちょい鬼）</h2>
+<div id="score">スコア: 0</div>
+
+<div id="game">
+  <div id="car" class="car"></div>
+</div>
+
+<div>
+  <button onclick="move(-1)">⬅️</button>
+  <button onclick="move(1)">➡️</button>
+</div>
+
+<script>
+const game = document.getElementById("game");
+const car = document.getElementById("car");
+const scoreDisplay = document.getElementById("score");
+
+let carX = 125;
+let obstacles = [];
+let speed = 3;
+let score = 0;
+let gameOver = false;
+
+car.style.left = carX + "px";
+
+function move(dir) {
+  if (gameOver) return;
+  carX += dir * 50;
+  carX = Math.max(0, Math.min(250, carX));
+  car.style.left = carX + "px";
+}
+
+function createObstacle() {
+  const obs = document.createElement("div");
+  obs.classList.add("obstacle");
+
+  const lane = Math.floor(Math.random() * 3);
+  obs.style.left = (lane * 100 + 25) + "px";
+  obs.style.top = "0px";
+
+  game.appendChild(obs);
+  obstacles.push(obs);
+}
+
+function update() {
+  if (gameOver) return;
+
+  if (Math.random() < 0.03) {
+    createObstacle();
+  }
+
+  obstacles.forEach((obs, index) => {
+    let y = parseInt(obs.style.top);
+    y += speed;
+    obs.style.top = y + "px";
+
+    // 当たり判定
+    if (y > 410) {
+      const obsX = parseInt(obs.style.left);
+      if (Math.abs(obsX - carX) < 50) {
+        gameOver = true;
+        alert("ゲームオーバー！スコア: " + score);
+        location.reload();
+      }
+    }
+
+    if (y > 500) {
+      obs.remove();
+      obstacles.splice(index, 1);
+    }
+  });
+
+  score++;
+  speed += 0.002; // 徐々に鬼化
+  scoreDisplay.textContent = "スコア: " + score;
+
+  requestAnimationFrame(update);
+}
+
+update();
+</script>
+
+</body>
+</html>
